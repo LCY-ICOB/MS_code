@@ -1,0 +1,23 @@
+# R script for tSNE plot rotation
+
+Seurat.object.rotated =  Seurat.object
+
+tsne_coords = Seurat.object, "tsne")
+
+angle = -128 * pi / 180 
+rotation_matrix = matrix(
+  c(cos(angle), -sin(angle), 
+    sin(angle),  cos(angle)),
+  nrow = 2
+)
+
+rotated_coords = t(rotation_matrix %*% t(tsne_coords))
+
+rownames(rotated_coords) = rownames(tsne_coords)
+colnames(rotated_coords) = colnames(tsne_coords)
+
+Seurat.object.rotated[["tsne"]]@cell.embeddings = rotated_coords
+
+p1 = DimPlot(Seurat.object, reduction = "tsne")
+p2 = DimPlot(Seurat.object.rotated, reduction = "tsne")
+plot_grid(p1, p2, ncol = 2)
