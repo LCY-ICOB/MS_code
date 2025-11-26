@@ -1,1 +1,27 @@
+import pandas as pd
+import numpy as np
+from sklearn.neighbors import KDTree
+
+file_path_txt = './tSNE.txt'
+
+data_df = pd.read_csv(file_path_txt, sep="\t", index_col=0)
+
+tSNE_columns = ['tSNE_1', 'tSNE_2']
+tSNE_values = data_df[tSNE_columns].values
+cell_types = data_df['tissue']
+
+tree = KDTree(tSNE_values)
+
+ratios = []
+for i in range(len(tSNE_values)):
+    distances, indices = tree.query([tSNE_values[i]], k=21) # 20 nearest neighbors
+    nearest_indices = indices[0][1:]
+    nearest_types = cell_types.iloc[nearest_indices]
+    a_ratio = (nearest_types == 'Brain').sum() / len(nearest_types)
+    ratios.append(a_ratio)
+
+result_df = pd.DataFrame({
+    'ID': data_df.index,
+    'Brain-ratio': [f"{ratio * 100:.0f}" for ratio in ratios]
+})
 
